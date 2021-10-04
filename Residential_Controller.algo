@@ -1,0 +1,17 @@
+'Initialize Column'
+INIT Column 
+    SET ElevatorAmount to two
+    SET min floor equal to minFloorValue
+    SET max floor equal to maxFloorValue
+
+'Initialize first elevator'
+INIT Elevator A
+
+'Initialize second elevator'
+INIT Elevator B
+
+'Create elevator request program'
+
+'Create elevator list program'
+
+'Create elevator choose program (Chooses which elevator to send)'
