@@ -1,17 +1,32 @@
+'variables for use later'
+SET columnAmount
+SET floorAmount
+SET elevatorAmount
+SET waitTime
+SET weightLimit
+
 'Initialize Column'
 INIT Column 
-    SET ElevatorAmount to two
-    SET min floor equal to minFloorValue
-    SET max floor equal to maxFloorValue
+    SET elevatorAmount to two
+    SET min floor to minFloorValue
+    SET max floor to maxFloorValue
+    SET floorAmount to floorAmount
+    SET status to columnStatus 'idle or used'
 
 'Initialize first elevator'
 INIT Elevator A
+    SET Door to elevatorDoor 'open or closed'
+    SET Status to elevatorStatus 'idle or moving'
 
-'Initialize second elevator'
-INIT Elevator B
+'Initialize second elevator' 'prob not needed'
+'INIT Elevator B
+    'SET Door to elevatorDoor 'open or closed'
+    'SET Status to elevatorStatus 'idle or moving'
 
-'Create elevator request program'
+'Initialize floor request button'
+INIT Floor request button
+    IF Floor request button == true
+    THEN CALL elevator request program
+    ELSE
 
-'Create elevator list program'
-
-'Create elevator choose program (Chooses which elevator to send)'
+'Functions section'
