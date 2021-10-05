@@ -5,28 +5,33 @@ SET elevatorAmount
 SET waitTime
 SET weightLimit
 
-'Initialize Column'
-INIT Column 
+'Define column'
+DEFINE Column 
+    SET ID TO _columnID
     SET elevatorAmount to two
     SET min floor to minFloorValue
     SET max floor to maxFloorValue
     SET floorAmount to floorAmount
     SET status to columnStatus 'idle or used'
-
-'Initialize first elevator'
-INIT Elevator A
+ENDDEFINE
+'Define elevator'
+DEFINE Elevator 
+    SET ID TO _elevatorID
     SET Door to elevatorDoor 'open or closed'
     SET Status to elevatorStatus 'idle or moving'
-
-'Initialize second elevator' 'prob not needed'
-'INIT Elevator B
-    'SET Door to elevatorDoor 'open or closed'
-    'SET Status to elevatorStatus 'idle or moving'
-
-'Initialize floor request button'
-INIT Floor request button
-    IF Floor request button == true
-    THEN CALL elevator request program
-    ELSE
-
+ENDDEFINE
+'Define door'
+DEFINE door
+    SET ID to _doorID
+    SET Status to doorStatus 'open or closed'
+ENDDEFINE
+'Define floor request button'
+DEFINE Floor request button
+    SET ID to _buttonID
+    SET Status to buttonStatus 'pressed or idle'
+ENDDEFINE
+'Define floor display'
+DEFINE floorDisplay
+    SET ID to _displayID
+    SET Status to displayStatus
 'Functions section'
