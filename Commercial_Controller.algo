@@ -1,6 +1,38 @@
-INIT Column 
-    SET ElevatorAmount to two
-    SET 
+'variables for use later'
+SET columnAmount
+SET floorAmount
+SET elevatorAmount
+SET waitTime
+SET weightLimit
 
-INIT Elevator A
-INIT Elevator B
+'Define column'
+DEFINE Column 
+    SET ID TO _columnID
+    SET floorAmount TO floorAmount
+    SET status TO columnStatus 'idle or used'
+    SET upButtonList TO EMPTY
+    SET downButtonList TO EMPTY
+ENDDEFINE
+'Define elevator'
+DEFINE Elevator 
+    SET ID TO _elevatorID
+    SET Floor TO _floor 
+    SET Status TO elevatorStatus 'idle or moving'
+    SET elevatorDoor 
+    
+ENDDEFINE
+'Define door'
+DEFINE door
+    SET ID TO _doorID
+    SET Status TO doorStatus 'open or closed'
+ENDDEFINE
+'Define floor request button'
+DEFINE Floor request button
+    SET ID TO _buttonID
+    SET Status TO buttonStatus 'pressed or idle'
+ENDDEFINE
+'Define floor display'
+DEFINE floorDisplay
+    SET ID TO _displayID
+    SET Status TO displayStatus
+'Functions section'

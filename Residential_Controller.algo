@@ -10,6 +10,8 @@ DEFINE Column
     SET ID TO _columnID
     SET floorAmount TO floorAmount
     SET status TO columnStatus 'idle or used'
+    SET upButtonList TO EMPTY
+    SET downButtonList TO EMPTY
 ENDDEFINE
 'Define elevator'
 DEFINE Elevator 
