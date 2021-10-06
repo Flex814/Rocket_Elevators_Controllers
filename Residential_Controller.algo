@@ -45,7 +45,7 @@ ENDDEFINE
 DEFINE Elevator 
     SET ID TO _elevatorID
     SET Floor TO _floor 
-    SET Status TO elevatorStatus 'idle or moving'
+    SET Status TO elevatorStatus 'Idle or Moving Up or Moving Down '
     SET elevatorDoor 
     SET pitStop TO EMPTY
     SET interiorButtons TO EMPTY
@@ -67,6 +67,18 @@ DEFINE Elevator
         ENDFOR
     ENDSEQUENCE
     
+    'create FUNCTION to move elevators'
+    SEQUENCE moveElevators USING elevator AND requestedFloor
+        WHILE pitStop NOT EQUAL zero
+            IF elevatorStatus IS Idle THEN 
+                IF _floor < requestedFloor THEN
+                    SET status TO "Moving Down"
+                ELSE 
+                    SET status to "Moving Up"
+                ENDIF 
+            ENDIF   
+    ENDSEQUENCE
+
 ENDDEFINE
 
 'Define door'
