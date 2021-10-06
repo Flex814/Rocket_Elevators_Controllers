@@ -3,6 +3,26 @@ SET columnAmount
 SET floorAmount
 SET elevatorAmount
 
+'Define battery'
+DEFINE battery
+    SET ID to _batteryID
+    SET status TO batteryStatus
+    SET columnsLog TO EMPTY
+
+    SEQUENCE storeColumnsLog
+        FOR EACH columnAmount
+            SET _ID TO 1
+            ADD TO columnsLog
+            INCREMENT _ID BY 1
+        ENDFOR
+    ENDSEQUENCE
+
+    
+
+
+
+ENDDEFINE
+
 'Define column'
 DEFINE Column 
     SET ID TO _columnID
@@ -15,25 +35,25 @@ DEFINE Column
     'Create FUNCTION to store amount of elevators'
     SEQUENCE storeElevatorLog
         FOR EACH elevatorAmount
-            SET ID TO 1
+            SET _ID TO 1
             ADD TO elevatorLog
-            INCREMENT ID by 1
+            INCREMENT _ID by 1
         ENDFOR
     ENDSEQUENCE
     'Create FUNCTION to store amount of upButtons'
     SEQUENCE storeUpButtonLog
         FOR EACH elevatorAmount
-            SET ID TO 1
+            SET _ID TO 1
             ADD TO upButtonLog
-            INCREMENT ID by 1
+            INCREMENT _ID by 1
         ENDFOR
     ENDSEQUENCE
     'Create FUNCTION to store amount of downButtons'
     SEQUENCE storeDownButtonLog
         FOR EACH elevatorAmount
-            SET ID TO 1
+            SET _ID TO 1
             ADD TO downButtonLog
-            INCREMENT ID by 1
+            INCREMENT _ID by 1
         ENDFOR
     ENDSEQUENCE
 
@@ -59,9 +79,9 @@ DEFINE Elevator
     'create FUNCTION to store amount of buttons inside each elevator'
     SEQUENCE storeInteriorButtons
         FOR EACH elevatorAmount
-            SET ID TO 1
+            SET _ID TO 1
             ADD TO interiorButtons
-            INCREMENT ID by 1
+            INCREMENT _ID by 1
         ENDFOR
     ENDSEQUENCE
     
@@ -152,8 +172,8 @@ DEFINE floorDisplay
 'Initiate section'
 DEFINE systemStart USING floorAmount AND elevatorAmount AND columnAmount
     FOR EACH columnAmount
-        SET ID TO 1
+        SET _ID TO 1
         INSTANTIATE columnN WITH ID AND floorAmount AND elevatorAmount
-        INCREMENT ID by 1
+        INCREMENT _ID by 1
     ENDFOR
 ENDDEFINE
