@@ -10,25 +10,89 @@ DEFINE Column
     SET ID TO _columnID
     SET floorAmount TO floorAmount
     SET status TO columnStatus 'idle or used'
+    SET upButtonLog TO EMPTY
+    SET downButtonLog TO EMPTY
+    SET elevatorLog TO EMPTY
+
+    'Create FUNCTION to store amount of elevators'
+    SEQUENCE storeElevatorLog
+        FOR EACH elevatorAmount
+            SET ID TO 1
+            ADD TO elevatorLog
+            INCREMENT ID by 1
+        ENDFOR
+    ENDSEQUENCE
+    'Create FUNCTION to store amount of upButtons'
+    SEQUENCE storeUpButtonLog
+        FOR EACH elevatorAmount
+            SET ID TO 1
+            ADD TO upButtonLog
+            INCREMENT ID by 1
+        ENDFOR
+    ENDSEQUENCE
+    'Create FUNCTION to store amount of downButtons'
+    SEQUENCE storeDownButtonLog
+        FOR EACH elevatorAmount
+            SET ID TO 1
+            ADD TO downButtonLog
+            INCREMENT ID by 1
+        ENDFOR
+    ENDSEQUENCE
+
 ENDDEFINE
+
 'Define elevator'
 DEFINE Elevator 
     SET ID TO _elevatorID
     SET Floor TO _floor 
-    SET Status TO elevatorStatus 'idle or moving'
+    SET Status TO elevatorStatus 'Idle or Moving Up or Moving Down '
     SET elevatorDoor 
+    SET pitStop TO EMPTY
+    SET interiorButtons TO EMPTY
+
+    'create FUNCTION to store amount of stops requested for elevator'
+    SEQUENCE storePitStop
+        FOR EACH elevatorAmount
+            SET ID TO 1
+            ADD TO pitStop
+            INCREMENT ID by 1
+        ENDFOR
+    ENDSEQUENCE
+    'create FUNCTION to store amount of buttons inside each elevator'
+    SEQUENCE storeInteriorButtons
+        FOR EACH elevatorAmount
+            SET ID TO 1
+            ADD TO interiorButtons
+            INCREMENT ID by 1
+        ENDFOR
+    ENDSEQUENCE
     
+    'create FUNCTION to move elevators'
+    SEQUENCE moveElevators USING elevator AND requestedFloor
+        WHILE pitStop NOT EQUAL zero
+            IF elevatorStatus IS Idle THEN 
+                IF _floor < requestedFloor THEN
+                    SET status TO "Moving Down"
+                ELSE 
+                    SET status to "Moving Up"
+                ENDIF 
+            ENDIF   
+    ENDSEQUENCE
+
 ENDDEFINE
+
 'Define door'
 DEFINE door
     SET ID TO _doorID
     SET Status TO doorStatus 'open or closed'
 ENDDEFINE
+
 'Define floor request button'
 DEFINE Floor request button
     SET ID TO _buttonID
     SET Status TO buttonStatus 'pressed or idle'
 ENDDEFINE
+
 'Define floor display'
 DEFINE floorDisplay
     SET ID TO _displayID
