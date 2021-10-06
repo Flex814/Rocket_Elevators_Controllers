@@ -124,6 +124,10 @@ DEFINE Elevator
 
     ENDSEQUENCE
     'add elevator log function?''
+    SEQUENCE addPitStop USING elevator AND floor
+        ADD floor TO pitStop OF elevator
+        SORT pitStop OF elevator TO ascending
+    ENDSEQUENCE
     
     
 ENDDEFINE
