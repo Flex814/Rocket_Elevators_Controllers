@@ -2,8 +2,6 @@
 SET columnAmount
 SET floorAmount
 SET elevatorAmount
-SET waitTime
-SET weightLimit
 
 'Define column'
 DEFINE Column 
@@ -79,6 +77,36 @@ DEFINE Elevator
             ENDIF   
     ENDSEQUENCE
 
+    'move elevators up'
+    SEQUENCE moveUp USING elevator
+        FOR EACH floorN IN pitStop
+            MOVE elevator UP 
+            SET _floor OF elevator to floorN
+            CALL updateFloorDisplay
+        ENDFOR
+    ENDSEQUENCE
+
+    'move elevators down'
+    SEQUENCE moveDown USING elevator
+        FOR EACH floorN IN pitStop
+            MOVE elevator DOWN 
+            SET _floor OF elevator to floorN
+            CALL updateFloorDisplay
+        ENDFOR
+    ENDSEQUENCE
+
+    'updateFloorDisplay'
+    SEQUENCE updateFloorDisplay USING floorDisplay AND floor
+        FOR EACH display IN floorDisplay
+            DISPLAY floor
+        ENDFOR
+    ENDSEQUENCE
+
+    'add open and close doors functions?'
+
+    'add elevator log function?''
+    
+    
 ENDDEFINE
 
 'Define door'
@@ -97,6 +125,7 @@ ENDDEFINE
 DEFINE floorDisplay
     SET ID TO _displayID
     SET Status TO displayStatus
+
 'Initiate section'
 DEFINE systemStart USING floorAmount AND elevatorAmount AND columnAmount
     FOR EACH columnAmount
