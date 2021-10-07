@@ -2,24 +2,28 @@
 SET columnAmount
 SET floorAmount
 SET elevatorAmount
+SET elevPerColumn
+SET minFloor
+SET maxFloor
+SET basementAmount
 
 'Define battery class'
-DEFINE battery
+DEFINE battery USING ID AND columnAmount AND elevPerColumn AND minFloor AND maxFloor
     SET ID to _batteryID
     SET status TO batteryStatus
     SET columnsLog TO EMPTY
 
-    SEQUENCE storeColumnsLog USING columnAmount
+    SEQUENCE storeColumnsLog USING columnAmount AND elevPerColumn AND minFloor AND maxFloor
         FOR EACH columnAmount
             SET _ID TO 1
-            ADD TO columnsLog
+            ADD (ID, "Active", elevPerColumn, minFloor, maxFloor)TO columnsLog
             INCREMENT _ID BY 1
         ENDFOR
     ENDSEQUENCE
 
     CALL storeColumnsLog WITH columnAmount
 
-
+    'Create METHOD to determine which columns handle which floors'
 
 
 ENDDEFINE

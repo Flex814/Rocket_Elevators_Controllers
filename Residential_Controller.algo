@@ -62,7 +62,8 @@ DEFINE Column USING _columnID AND floorAmount AND columnStatus AND elevatorAmoun
             ENDIF
         ENDFOR
 
-        IF ActiveElevatorLog IS not EMPTY THEN
+
+        IF ActiveElevatorLog IS not EMPTY THEN 'list of elevators with same direction of request'
             SET sameDirElevatorLog EQUAL TO ActiveElevatorLog WITH SAME direction
         ENDIF
 
