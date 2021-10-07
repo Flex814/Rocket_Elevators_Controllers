@@ -113,7 +113,7 @@ ENDDEFINE
 
 
 'Define elevator class'
-DEFINE Elevator 
+DEFINE Elevator USING id AND floorAmount AND _floor AND elevatorStatus
     SET ID TO _elevatorID
     SET Floor TO _floor 
     SET Status TO elevatorStatus 'Idle or Moving Up or Moving Down '
@@ -204,24 +204,34 @@ DEFINE Elevator
     
     
 ENDDEFINE
-
+'------------------------------------------------------------------------------------------'
 'Define door class'
 DEFINE door
     SET ID TO _doorID
     SET Status TO doorStatus 'open or closed'
+    SET floor TO floor
 ENDDEFINE
 
 'Define floor request button class'
 DEFINE Floor request button
     SET ID TO _buttonID
     SET Status TO buttonStatus 'pressed or idle'
+    SET floor TO floor
 ENDDEFINE
 
 'Define floor display class'
 DEFINE floorDisplay
     SET ID TO _displayID
     SET Status TO displayStatus
-
+    SET floor TO floor
+ENDDEFINE
+'------------------------------------------------------------------------------------------'
+'Define buttonDir enum'
+Define buttonDir
+    SET up TO "up"
+    SET down TO "down"
+ENDDEFINE
+'------------------------------------------------------------------------------------------'
 'Initiate section'
 DEFINE systemStart USING floorAmount AND elevatorAmount AND columnAmount
     FOR EACH columnAmount
