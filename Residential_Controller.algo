@@ -54,7 +54,7 @@ DEFINE Column USING _columnID AND floorAmount AND columnStatus AND elevatorAmoun
 
         FOR EACH elevatorN IN elevatorLog
             IF elevatorN IS NOT Idle AND elevatorN status IS EQUAL TO direction THEN
-                IF (elevatorN status IS "UP" AND elevatorN floor IS < Floor OR elevatorN status IS "DOWN" AND elevatorN floor IS > currentFloor) THEN
+                IF (elevatorN status IS "UP" AND elevatorN floor IS LESS THAN Floor OR elevatorN status IS "DOWN" AND elevatorN floor IS GREATER THAN currentFloor) THEN
                     ADD elevatorN TO ActiveElevatorLog
                 ENDIF
             ELSE 
@@ -79,10 +79,10 @@ DEFINE Column USING _columnID AND floorAmount AND columnStatus AND elevatorAmoun
 
     'Create METHOD to determine closest elevator using array'
     SEQUENCE determineCloseElevator USING closestArray
-        SET closeElevator TO elevator[0] OF closestArray
-        SET travelScore EQUAL TO (closeElevator floor - currentFloor)
+        SET closeElevator TO FIRST elevator OF closestArray
+        SET travelScore EQUAL TO (closeElevator floor MINUS currentFloor)
         FOR EACH elevatorN IN closestArray
-            IF ((elevatorN floor - currentFloor) < travelScore) THEN
+            IF ((elevatorN floor MINUS currentFloor) IS LESS THAN travelScore) THEN
                 SET closeElevator TO elevatorN
             ENDIF
         ENDFOR
@@ -90,7 +90,6 @@ DEFINE Column USING _columnID AND floorAmount AND columnStatus AND elevatorAmoun
         RETURN bestElevator 
     ENDSEQUENCE
 ENDDEFINE 
-'------------------------------------------------------------------------------------------'
 'Define elevator class'
 DEFINE Elevator USING id AND floorAmount AND _floor AND elevatorStatus
     SET ID TO _elevatorID
@@ -121,7 +120,7 @@ DEFINE Elevator USING id AND floorAmount AND _floor AND elevatorStatus
     SEQUENCE moveElevators USING elevator AND requestedFloor
         WHILE pitStop NOT EQUAL zero
             IF elevatorStatus IS Idle THEN 
-                IF _floor < requestedFloor THEN
+                IF _floor LESS THAN requestedFloor THEN
                     SET status TO "Moving Down"
                 ELSE 
                     SET status to "Moving Up"
@@ -175,13 +174,6 @@ DEFINE Elevator USING id AND floorAmount AND _floor AND elevatorStatus
     ENDIF
 
     ENDSEQUENCE
-    'add floor to pitstop log when user presses elevator button inside or out'
-    SEQUENCE addPitStop USING elevator AND floor
-        ADD floor TO pitStop OF elevator
-        SORT pitStop OF elevator TO ascending
-    ENDSEQUENCE
-    
-    
 ENDDEFINE
 '------------------------------------------------------------------------------------------'
 'Define door class'
