@@ -3,8 +3,8 @@ SET columnAmount
 SET floorAmount
 SET elevatorAmount
 
-'Define column'
-DEFINE Column 
+'Define column class'
+DEFINE Column USING _columnID AND floorAmount AND columnStatus
     SET ID TO _columnID
     SET floorAmount TO floorAmount
     SET status TO columnStatus 'idle or used'
@@ -36,7 +36,36 @@ DEFINE Column
             INCREMENT ID by 1
         ENDFOR
     ENDSEQUENCE
+    'Create FUNCTION to choose elevator to send based of curent movement direction or idleness'
+    SEQUENCE chooseElevator USING floor AND direction AND elevatorLog of columnN
+        SET ActiveElevatorLog TO EMPTY
+        SET IdleElevatorLog TO EMPTY
 
+        FOR EACH elevatorN IN elevatorLog
+            IF elevatorN IS NOT Idle AND elevatorN status IS EQUAL TO direction THEN
+                IF (elevatorN status IS "UP" AND elevatorN floor IS < Floor OR elevatorN status IS "DOWN" AND elevatorN floor IS > currentFloor) THEN
+                    ADD elevatorN TO ActiveElevatorLog
+                ENDIF
+            ELSE 
+                ADD elevatorN TO IdleElevatorLog
+            ENDIF
+        ENDFOR
+
+        IF (ActiveElevatorLog IS not EMPTY) THEN
+            CALL findNearestElevator USING ActiveElevatorLog
+        ELSE 
+            CALL findNearestElevator USING IdleElevatorLog       
+
+        RETURN bestElevator 
+
+    ENDSEQUENCE
+
+    'Create FUNCTION to determine closest elevator using array'
+    SEQUENCE determineCloseElevator USING closestArray
+        SET closeElevator TO elevator[0] OF closestArray
+        SET 
+    'not done'
+    ENDSEQUENCE
 ENDDEFINE 
 
 'Define elevator'
@@ -45,7 +74,7 @@ DEFINE Elevator
     SET Floor TO _floor 
     SET Status TO elevatorStatus 'Idle or Moving Up or Moving Down '
     SET elevatorDoor 
-    SET pitStop TO EMPTY
+    SET pitStop TO EMPTY 'contains amount of stops requested of an elevator'
     SET interiorButtons TO EMPTY
 
     'create FUNCTION to store amount of stops requested for elevator'
@@ -123,7 +152,7 @@ DEFINE Elevator
     ENDIF
 
     ENDSEQUENCE
-    'add elevator log function?''
+    'add floor to pitstop log when user presses elevator button inside or out'
     SEQUENCE addPitStop USING elevator AND floor
         ADD floor TO pitStop OF elevator
         SORT pitStop OF elevator TO ascending
