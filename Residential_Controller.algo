@@ -52,19 +52,24 @@ DEFINE Column USING _columnID AND floorAmount AND columnStatus
         ENDFOR
 
         IF (ActiveElevatorLog IS not EMPTY) THEN
-            CALL findNearestElevator USING ActiveElevatorLog
+            CALL determineCloseElevator USING ActiveElevatorLog
         ELSE 
-            CALL findNearestElevator USING IdleElevatorLog       
+            CALL determineCloseElevator USING IdleElevatorLog       
 
         RETURN bestElevator 
-
     ENDSEQUENCE
 
     'Create FUNCTION to determine closest elevator using array'
     SEQUENCE determineCloseElevator USING closestArray
         SET closeElevator TO elevator[0] OF closestArray
-        SET 
-    'not done'
+        SET travelScore EQUAL TO (closeElevator floor - currentFloor)
+        FOR EACH elevatorN IN closestArray
+            IF ((elevatorN floor - currentFloor) < travelScore) THEN
+                SET closeElevator TO elevatorN
+            ENDIF
+        ENDFOR
+
+        RETURN bestElevator 
     ENDSEQUENCE
 ENDDEFINE 
 
