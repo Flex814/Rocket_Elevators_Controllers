@@ -62,12 +62,18 @@ DEFINE Column USING _columnID AND floorAmount AND columnStatus AND elevatorAmoun
             ENDIF
         ENDFOR
 
-        IF (ActiveElevatorLog IS not EMPTY) THEN
-            CALL determineCloseElevator USING ActiveElevatorLog
+        IF ActiveElevatorLog IS not EMPTY THEN
+            SET sameDirElevatorLog EQUAL TO ActiveElevatorLog WITH SAME direction
+        ENDIF
+
+        IF sameDirElevatorLog IS NOT EMPTY THEN
+            CALL determineCloseElevator USING sameDirElevatorLog AND floor
         ELSE 
-            CALL determineCloseElevator USING IdleElevatorLog       
+            CALL determineCloseElevator USING IdleElevatorLog AND floor
+        ENDIF
 
         RETURN bestElevator 
+        
     ENDSEQUENCE
 
     'Create METHOD to determine closest elevator using array'

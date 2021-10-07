@@ -25,40 +25,92 @@ DEFINE battery
 ENDDEFINE
 
 'Define column class'
-DEFINE Column 
+DEFINE Column USING _columnID AND floorAmount AND columnStatus AND elevatorAmount
     SET ID TO _columnID
     SET floorAmount TO floorAmount
     SET status TO columnStatus 'idle or used'
+    SET elevatorAmount TO elevatorAmount
     SET upButtonLog TO EMPTY
     SET downButtonLog TO EMPTY
     SET elevatorLog TO EMPTY
 
-    'Create FUNCTION to store amount of elevators'
-    SEQUENCE storeElevatorLog
+    CALL storeElevatorLog
+    CALL storeUpButtonLog
+    CALL storeDownButtonLog
+
+    'Create METHOD to store amount of elevators'
+    SEQUENCE storeElevatorLog USING elevatorAmount
         FOR EACH elevatorAmount
-            SET _ID TO 1
-            ADD TO elevatorLog
-            INCREMENT _ID by 1
+            SET ID TO 1
+            ADD (ID, Idle, 1, Closed, floorAmount) TO elevatorLog
+            INCREMENT ID by 1
         ENDFOR
     ENDSEQUENCE
-    'Create FUNCTION to store amount of upButtons'
-    SEQUENCE storeUpButtonLog
+    'Create METHOD to store amount of upButtons'
+    SEQUENCE storeUpButtonLog USING floorAmount
         FOR EACH elevatorAmount
-            SET _ID TO 1
-            ADD TO upButtonLog
-            INCREMENT _ID by 1
+            SET ID TO 1
+            IF ID NOT EQUAL TO highestFloor THEN
+                ADD (ID) TO upButtonLog
+            ENDIF
+            INCREMENT ID by 1
         ENDFOR
     ENDSEQUENCE
-    'Create FUNCTION to store amount of downButtons'
-    SEQUENCE storeDownButtonLog
+    'Create METHOD to store amount of downButtons'
+    SEQUENCE storeDownButtonLog USING floorAmount
         FOR EACH elevatorAmount
-            SET _ID TO 1
-            ADD TO downButtonLog
-            INCREMENT _ID by 1
+            SET ID TO 1
+            IF ID GREATER THAN lowestFloor THEN
+                ADD (ID) TO downButtonLog
+            ENDIF
+            INCREMENT ID by 1
         ENDFOR
+    ENDSEQUENCE
+    'Create METHOD to choose elevator to send based of curent movement direction or idleness'
+    SEQUENCE chooseElevator USING floor AND direction AND elevatorLog of columnN
+        SET bestElevator 
+        SET ActiveElevatorLog TO EMPTY
+        SET IdleElevatorLog TO EMPTY
+        SET sameDirElevatorLog TO EMPTY
+
+        FOR EACH elevatorN IN elevatorLog
+            IF elevatorN IS NOT Idle AND elevatorN status IS EQUAL TO direction THEN
+                IF (elevatorN status IS "UP" AND elevatorN floor IS < Floor OR elevatorN status IS "DOWN" AND elevatorN floor IS > currentFloor) THEN
+                    ADD elevatorN TO ActiveElevatorLog
+                ENDIF
+            ELSE 
+                ADD elevatorN TO IdleElevatorLog
+            ENDIF
+        ENDFOR
+
+        IF ActiveElevatorLog IS not EMPTY THEN
+            SET sameDirElevatorLog EQUAL TO ActiveElevatorLog WITH SAME direction
+        ENDIF
+
+        IF sameDirElevatorLog IS NOT EMPTY THEN
+            CALL determineCloseElevator USING sameDirElevatorLog AND floor
+        ELSE 
+            CALL determineCloseElevator USING IdleElevatorLog AND floor
+        ENDIF
+
+        RETURN bestElevator 
+        
     ENDSEQUENCE
 
+    'Create METHOD to determine closest elevator using array'
+    SEQUENCE determineCloseElevator USING closestArray
+        SET closeElevator TO elevator[0] OF closestArray
+        SET travelScore EQUAL TO (closeElevator floor - currentFloor)
+        FOR EACH elevatorN IN closestArray
+            IF ((elevatorN floor - currentFloor) < travelScore) THEN
+                SET closeElevator TO elevatorN
+            ENDIF
+        ENDFOR
+
+        RETURN bestElevator 
+    ENDSEQUENCE
 ENDDEFINE 
+
 
 'Define elevator class'
 DEFINE Elevator 
@@ -66,10 +118,10 @@ DEFINE Elevator
     SET Floor TO _floor 
     SET Status TO elevatorStatus 'Idle or Moving Up or Moving Down '
     SET elevatorDoor 
-    SET pitStop TO EMPTY
+    SET pitStop TO EMPTY 'contains amount of stops requested of an elevator'
     SET interiorButtons TO EMPTY
 
-    'create FUNCTION to store amount of stops requested for elevator'
+    'create METHOD to store amount of stops requested for elevator'
     SEQUENCE storePitStop
         FOR EACH elevatorAmount
             SET ID TO 1
@@ -77,16 +129,16 @@ DEFINE Elevator
             INCREMENT ID by 1
         ENDFOR
     ENDSEQUENCE
-    'create FUNCTION to store amount of buttons inside each elevator'
+    'create METHOD to store amount of buttons inside each elevator'
     SEQUENCE storeInteriorButtons
         FOR EACH elevatorAmount
-            SET _ID TO 1
+            SET ID TO 1
             ADD TO interiorButtons
-            INCREMENT _ID by 1
+            INCREMENT ID by 1
         ENDFOR
     ENDSEQUENCE
     
-    'create FUNCTION to move elevators'
+    'create METHOD to move elevators'
     SEQUENCE moveElevators USING elevator AND requestedFloor
         WHILE pitStop NOT EQUAL zero
             IF elevatorStatus IS Idle THEN 
@@ -135,7 +187,7 @@ DEFINE Elevator
         ENDFOR
     ENDSEQUENCE
 
-    'add open and close doors functions?'
+    'add open and close doors METHODs?'
     SEQUENCE openDoor USING elevator AND floor AND door
     IF status IS "Idle" THEN
         SET status TO "Open"
@@ -144,7 +196,7 @@ DEFINE Elevator
     ENDIF
 
     ENDSEQUENCE
-    'add elevator log function?''
+    'add floor to pitstop log when user presses elevator button inside or out'
     SEQUENCE addPitStop USING elevator AND floor
         ADD floor TO pitStop OF elevator
         SORT pitStop OF elevator TO ascending
@@ -173,8 +225,8 @@ DEFINE floorDisplay
 'Initiate section'
 DEFINE systemStart USING floorAmount AND elevatorAmount AND columnAmount
     FOR EACH columnAmount
-        SET _ID TO 1
+        SET ID TO 1
         INSTANTIATE columnN WITH ID AND floorAmount AND elevatorAmount
-        INCREMENT _ID by 1
+        INCREMENT ID by 1
     ENDFOR
 ENDDEFINE
