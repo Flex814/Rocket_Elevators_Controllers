@@ -2,26 +2,87 @@
 SET columnAmount
 SET floorAmount
 SET elevatorAmount
+SET elevPerColumn
+SET minFloor
+SET maxFloor
+SET basementAmount
+SET allFloors EQUAL TO floorAmount PLUS basementAmount
 
 'Define battery class'
-DEFINE battery
+DEFINE battery USING ID AND columnAmount AND elevPerColumn AND minFloor AND maxFloor
     SET ID to _batteryID
     SET status TO batteryStatus
     SET columnsLog TO EMPTY
 
-    SEQUENCE storeColumnsLog USING columnAmount
+    SEQUENCE storeColumnsLog USING columnAmount AND elevPerColumn AND minFloor AND maxFloor
         FOR EACH columnAmount
             SET _ID TO 1
-            ADD TO columnsLog
+            ADD (ID, "Active", elevPerColumn, minFloor, maxFloor)TO columnsLog
             INCREMENT _ID BY 1
         ENDFOR
     ENDSEQUENCE
 
     CALL storeColumnsLog WITH columnAmount
 
+    'Create METHOD to determine which columns handle which floors'
+    SEQUENCE findFloorsPerColumn USING columnAmount AND floorAmount AND basementAmount AND minFloor AND maxFloor
 
+        SET floorAmount EQUAL TO allFloors MINUS basementAmount
 
+        IF basementAmount GREATER THAN zero THEN
+            SET floorsPerColumn TO (floorAmount DIVIDED BY (columnAmount MINUS one))
+        ELSE 
+            SET floorsPerColumn TO (floorAmount DIVIDED BY columnAmount)
+        ENDIF
+        
+        RETURN floorsPerColumn
+    ENDSEQUENCE
 
+    'Create METHOD to get leftover floors per column and their values'
+    SEQUENCE setColumnVals 
+       SET leftoverFloors
+
+        IF basementAmount IS GREATER THAN zero THEN
+            SET leftoverFloors EQUAL TO floorAmount DIVIDED BY (columnAmount MINUS one)
+        ELSE 
+            SET leftoverFloors EQUAL TO floorAmount DIVIDED BY columnAmount
+        ENDIF
+    
+        'set min and max floor of each column'
+        CALL setMinMaxColumns
+
+        'adjust grouped floors of column if there are still leftover floors'
+        IF leftoverFloors IS NOT EQUAL TO zero THEN
+            SET maxFloor EQUAL TO minFloor PLUS leftoverFloors
+            SET groupedFloors EQUAL TO floorsPerColumn PLUS leftoverFloors
+        ENDIF
+        'make first column serve basement'
+        IF basementAmount IS GREATER THAN zero THEN
+            CALL determineBasementControl
+        ENDIF
+        'Create METHOD to determine min and max floor of basement column'
+        SEQUENCE determineBasementControl
+            SET groupedFloors EQUAL TO basementAmount PLUS one
+            SET minFloor EQUAL TO basementAmount MULTIPLIED BY negative one'negative value since under ground'
+            SET maxFloor EQUAL TO one
+        ENDSEQUENCE
+        'Create METHOD to determine min and max floor of everything except basement'
+        SEQUENCE setMinMaxColumns
+            SET minFloor EQUAL TO one
+            FOR EACH columnsLog
+                SET ID TO 1
+                IF ID IS EQUAL TO 1 THEN
+                    SET groupedFloors EQUAL TO floorsPerColumn
+                ELSE
+                    SET groupedFloors EQUAL TO floorsPerColumn plus one 
+                ENDIF
+            SET minFloor OF THIS columnsLog EQUAL TO minFloor
+            SET maxFloor OF THIS columnsLog EQUAL TO maxFloor plus floorsPerColumn minus one
+            SET minFloor EQUAL TO THIS maxFloor plus one
+            INCREMENT ID BY 1
+        ENDFOR
+        ENDSEQUENCE
+    ENDSEQUENCE
 ENDDEFINE
 
 'Define column class'
@@ -30,6 +91,7 @@ DEFINE Column USING _columnID AND floorAmount AND columnStatus AND elevatorAmoun
     SET floorAmount TO floorAmount
     SET status TO columnStatus 'idle or used'
     SET elevatorAmount TO elevatorAmount
+    SET groupedFloors TO groupedFloors
     SET upButtonLog TO EMPTY
     SET downButtonLog TO EMPTY
     SET elevatorLog TO EMPTY
@@ -75,7 +137,7 @@ DEFINE Column USING _columnID AND floorAmount AND columnStatus AND elevatorAmoun
 
         FOR EACH elevatorN IN elevatorLog
             IF elevatorN IS NOT Idle AND elevatorN status IS EQUAL TO direction THEN
-                IF (elevatorN status IS "UP" AND elevatorN floor IS < Floor OR elevatorN status IS "DOWN" AND elevatorN floor IS > currentFloor) THEN
+                IF (elevatorN status IS "UP" AND elevatorN floor IS LESS THAN Floor OR elevatorN status IS "DOWN" AND elevatorN floor IS GREATER THAN currentFloor) THEN
                     ADD elevatorN TO ActiveElevatorLog
                 ENDIF
             ELSE 
@@ -99,10 +161,10 @@ DEFINE Column USING _columnID AND floorAmount AND columnStatus AND elevatorAmoun
 
     'Create METHOD to determine closest elevator using array'
     SEQUENCE determineCloseElevator USING closestArray
-        SET closeElevator TO elevator[0] OF closestArray
-        SET travelScore EQUAL TO (closeElevator floor - currentFloor)
+        SET closeElevator TO FIRST elevator OF closestArray
+        SET travelScore EQUAL TO (closeElevator floor MINUS currentFloor)
         FOR EACH elevatorN IN closestArray
-            IF ((elevatorN floor - currentFloor) < travelScore) THEN
+            IF ((elevatorN floor MINUS currentFloor) IS LESS THAN travelScore) THEN
                 SET closeElevator TO elevatorN
             ENDIF
         ENDFOR
@@ -110,10 +172,8 @@ DEFINE Column USING _columnID AND floorAmount AND columnStatus AND elevatorAmoun
         RETURN bestElevator 
     ENDSEQUENCE
 ENDDEFINE 
-
-
 'Define elevator class'
-DEFINE Elevator 
+DEFINE Elevator USING id AND floorAmount AND _floor AND elevatorStatus
     SET ID TO _elevatorID
     SET Floor TO _floor 
     SET Status TO elevatorStatus 'Idle or Moving Up or Moving Down '
@@ -142,7 +202,7 @@ DEFINE Elevator
     SEQUENCE moveElevators USING elevator AND requestedFloor
         WHILE pitStop NOT EQUAL zero
             IF elevatorStatus IS Idle THEN 
-                IF _floor < requestedFloor THEN
+                IF _floor LESS THAN requestedFloor THEN
                     SET status TO "Moving Down"
                 ELSE 
                     SET status to "Moving Up"
@@ -196,32 +256,35 @@ DEFINE Elevator
     ENDIF
 
     ENDSEQUENCE
-    'add floor to pitstop log when user presses elevator button inside or out'
-    SEQUENCE addPitStop USING elevator AND floor
-        ADD floor TO pitStop OF elevator
-        SORT pitStop OF elevator TO ascending
-    ENDSEQUENCE
-    
-    
 ENDDEFINE
-
+'------------------------------------------------------------------------------------------'
 'Define door class'
 DEFINE door
     SET ID TO _doorID
     SET Status TO doorStatus 'open or closed'
+    SET floor TO floor
 ENDDEFINE
 
 'Define floor request button class'
 DEFINE Floor request button
     SET ID TO _buttonID
     SET Status TO buttonStatus 'pressed or idle'
+    SET floor TO floor
 ENDDEFINE
 
 'Define floor display class'
 DEFINE floorDisplay
     SET ID TO _displayID
     SET Status TO displayStatus
-
+    SET floor TO floor
+ENDDEFINE
+'------------------------------------------------------------------------------------------'
+'Define buttonDir enum'
+Define buttonDir
+    SET up TO "up"
+    SET down TO "down"
+ENDDEFINE
+'------------------------------------------------------------------------------------------'
 'Initiate section'
 DEFINE systemStart USING floorAmount AND elevatorAmount AND columnAmount
     FOR EACH columnAmount
