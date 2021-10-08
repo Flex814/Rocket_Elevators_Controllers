@@ -6,6 +6,7 @@ SET elevPerColumn
 SET minFloor
 SET maxFloor
 SET basementAmount
+SET allFloors EQUAL TO floorAmount PLUS basementAmount
 
 'Define battery class'
 DEFINE battery USING ID AND columnAmount AND elevPerColumn AND minFloor AND maxFloor
@@ -24,8 +25,39 @@ DEFINE battery USING ID AND columnAmount AND elevPerColumn AND minFloor AND maxF
     CALL storeColumnsLog WITH columnAmount
 
     'Create METHOD to determine which columns handle which floors'
+    SEQUENCE findFloorsPerColumn USING columnAmount AND floorAmount AND basementAmount AND minFloor AND maxFloor
 
+        SET floorAmount EQUAL TO allFloors MINUS basementAmount
 
+        IF basementAmount GREATER THAN zero THEN
+            SET floorsPerColumn TO (floorAmount DIVIDED BY (columnAmount MINUS one))
+        ELSE 
+            SET floorsPerColumn TO (floorAmount DIVIDED BY columnAmount)
+        ENDIF
+        
+        RETURN floorsPerColumn
+    ENDSEQUENCE
+
+    'Create METHOD to get leftover floors per column and their values'
+    SEQUENCE setColumnVals 
+       SET leftoverFloors
+
+        IF basementAmount IS GREATER THAN zero THEN
+            SET leftoverFloors EQUAL TO floorAmount DIVIDED BY (columnAmount MINUS one)
+        ELSE 
+            SET leftoverFloors EQUAL TO floorAmount DIVIDED BY columnAmount
+        ENDIF
+    
+        'Determine min and max floor of basement'
+        CALL determineColumnFloor
+
+        IF leftoverFloors IS NOT EQUAL TO zero THEN
+            SET maxFloor EQUAL TO 
+
+        'Create METHOD to determine min and max floor of everything except basement'
+       
+
+    ENDSEQUENCE
 ENDDEFINE
 
 'Define column class'
