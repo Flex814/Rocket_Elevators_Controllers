@@ -48,15 +48,40 @@ DEFINE battery USING ID AND columnAmount AND elevPerColumn AND minFloor AND maxF
             SET leftoverFloors EQUAL TO floorAmount DIVIDED BY columnAmount
         ENDIF
     
-        'Determine min and max floor of basement'
-        CALL determineColumnFloor
+        'set min and max floor of each column'
+        CALL setMinMaxColumns
 
+        'adjust grouped floors of column if there are still leftover floors'
         IF leftoverFloors IS NOT EQUAL TO zero THEN
-            SET maxFloor EQUAL TO 
-
+            SET maxFloor EQUAL TO minFloor PLUS leftoverFloors
+            SET groupedFloors EQUAL TO floorsPerColumn PLUS leftoverFloors
+        ENDIF
+        'make first column serve basement'
+        IF basementAmount IS GREATER THAN zero THEN
+            CALL determineBasementControl
+        ENDIF
+        'Create METHOD to determine min and max floor of basement column'
+        SEQUENCE determineBasementControl
+            SET groupedFloors EQUAL TO basementAmount PLUS one
+            SET minFloor EQUAL TO basementAmount MULTIPLIED BY negative one'negative value since under ground'
+            SET maxFloor EQUAL TO one
+        ENDSEQUENCE
         'Create METHOD to determine min and max floor of everything except basement'
-       
-
+        SEQUENCE setMinMaxColumns
+            SET minFloor EQUAL TO one
+            FOR EACH columnsLog
+                SET ID TO 1
+                IF ID IS EQUAL TO 1 THEN
+                    SET groupedFloors EQUAL TO floorsPerColumn
+                ELSE
+                    SET groupedFloors EQUAL TO floorsPerColumn plus one 
+                ENDIF
+            SET minFloor OF THIS columnsLog EQUAL TO minFloor
+            SET maxFloor OF THIS columnsLog EQUAL TO maxFloor plus floorsPerColumn minus one
+            SET minFloor EQUAL TO THIS maxFloor plus one
+            INCREMENT ID BY 1
+        ENDFOR
+        ENDSEQUENCE
     ENDSEQUENCE
 ENDDEFINE
 
@@ -66,6 +91,7 @@ DEFINE Column USING _columnID AND floorAmount AND columnStatus AND elevatorAmoun
     SET floorAmount TO floorAmount
     SET status TO columnStatus 'idle or used'
     SET elevatorAmount TO elevatorAmount
+    SET groupedFloors TO groupedFloors
     SET upButtonLog TO EMPTY
     SET downButtonLog TO EMPTY
     SET elevatorLog TO EMPTY
