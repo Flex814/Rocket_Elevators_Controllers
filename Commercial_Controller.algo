@@ -199,7 +199,7 @@ DEFINE Elevator USING id AND floorAmount AND _floor AND elevatorStatus
     ENDSEQUENCE
     
     'create METHOD to move elevators'
-    SEQUENCE moveElevators USING elevator AND requestedFloor
+    SEQUENCE moveElevators USING elevator AND requestedFloor AND requestedColumn
         WHILE pitStop NOT EQUAL zero
             IF elevatorStatus IS Idle THEN 
                 IF _floor LESS THAN requestedFloor THEN
@@ -247,14 +247,18 @@ DEFINE Elevator USING id AND floorAmount AND _floor AND elevatorStatus
         ENDFOR
     ENDSEQUENCE
 
-    'add open and close doors METHODs?'
+    'add open and close doors METHOD'
     SEQUENCE openDoor USING elevator AND floor AND door
     IF status IS "Idle" THEN
         SET status TO "Open"
     ELSE
         SET status TO "Closed"
     ENDIF
-
+    ENDSEQUENCE
+    'add floor to list for button press'
+    SEQUENCE addFloorToList USING elevator AND floor
+        Add floor TO pitStop OF elevator
+        SORT pitStop OF elevator TO ascending
     ENDSEQUENCE
 ENDDEFINE
 '------------------------------------------------------------------------------------------'
@@ -278,6 +282,34 @@ DEFINE floorDisplay
     SET Status TO displayStatus
     SET floor TO floor
 ENDDEFINE
+
+'On elevator request outside elevator'
+SEQUENCE elevatorRequest USING currentFloor AND buttonDir
+    READ currentFloor AND buttonDir
+    IF buttonDir IS up THEN 
+        SET requestButton OF upButtonLog TO "active"
+    ELSE
+        SET requestButton OF downButtonLog TO "active"
+    ENDIF
+
+    CALL chooseElevator WITH buttonDir AND elevatorLog AND currentFloor
+    CALL addFloorToList WITH bestElevator AND currentFloor AND pitStop
+    CALL moveElevators WITH bestElevator AND pitStop AND currentFloor
+ENDSEQUENCE
+
+'On floot request inside elevator'
+SEQUENCE floorRequest USING requestedFloor AND elevator
+    READ requestedFloor AND buttonDir
+    IF buttonDir is up THEN
+        SET requestButton OF upButtonLog TO "active"
+    ELSE 
+        SET requestButton OF downButtonLog TO "active"
+    ENDIF
+
+    CALL addFloorToList WITH requestedFloor AND elevator
+    CALL moveElevators WITH elevator AND pitStop AND requestedFloor
+ENDSEQUENCE
+
 '------------------------------------------------------------------------------------------'
 'Define buttonDir enum'
 Define buttonDir
